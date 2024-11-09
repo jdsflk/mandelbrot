@@ -23,7 +23,7 @@ zoomFactor = 0.98;
 % Spiral region
 % center = -0.01015 + 0.633i;
 % Feigenbaum Point
-%center = -1.40115 + 0i;
+% center = -1.40115 + 0i;
 % Elephant valley
 % center = 0.285 + 0.01i;
 % Seahorse valley
@@ -37,22 +37,27 @@ while isvalid(fig)
     % Calculate the current grid
     % linspace(from, to, stepsize)
     tic;
-    realVals = linspace(realRange(1), realRange(2), resolution);
-    imagVals = linspace(imagRange(1), imagRange(2), resolution);
+    realVals = gpuArray.linspace(realRange(1), realRange(2), resolution);
+    imagVals = gpuArray.linspace(imagRange(1), imagRange(2), resolution);
 
     % Create the components of the cartesian plane
     [Re, Im] = meshgrid(realVals, imagVals);
 
     % Combine the two components to form the cartesian plane
-    complexPlane = Re + 1i * Im;
+    complexPlane = gpuArray(Re + 1i * Im);
 
     % Preallocating the matrix for better efficiency
-    iterations = gpuArray(complex(zeros(size(complexPlane))));
+    iterations = gpuArray(zeros(size(complexPlane)));
 
     % Calculating the iterations for each point
     % This decides whether a point is an element of the Mandelbrot set or
     % not
-    iterations = arrayfun(@(x) test_bounded(x, maxIterations, maxVal), complexPlane);
+    currentVal = gpuArray(complex(zeros(size(complexPlane))));
+    for i = 0:1:maxIterations
+        currentVal = currentVal.^2 + complexPlane;
+        stillBounded = abs(currentVal) <= maxVal;
+        iterations = iterations + stillBounded;
+    end
 
     % Display the image
     imagesc(realRange, imagRange, iterations);
@@ -73,22 +78,4 @@ while isvalid(fig)
     % Zoom speed 60fps -> 0.016
     %pause(0.02);
     toc;
-end
-
-% Close parallel pool
-p = gcp;
-delete(p);
-
-% Checks if the series z^2 + c is bounded, with c as input, starting from 
-% z = 0
-function [y] = test_bounded(c, maxIterations, maxVal)
-    prevVal = 0;
-    for i = 0:1:maxIterations
-        currentVal = prevVal^2 + c;
-        if (abs(currentVal) > maxVal)
-            break;
-        end
-        prevVal = currentVal;
-    end
-    y = i;
 end
