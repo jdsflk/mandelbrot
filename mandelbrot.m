@@ -29,14 +29,6 @@ zoomFactor = 0.98;
 % Seahorse valley
 center = -0.75 + 0.1i;
 
-
-% Start a parallel pool with the maximum available thread workers
-try
-    parpool('Threads', maxNumCompThreads);
-catch e
-    disp('Threads already running')
-end
-
 % Opens a figure
 fig = figure;
 fig.WindowState = 'maximized';
@@ -55,16 +47,12 @@ while isvalid(fig)
     complexPlane = Re + 1i * Im;
 
     % Preallocating the matrix for better efficiency
-    iterations = zeros(size(complexPlane));
+    iterations = gpuArray(complex(zeros(size(complexPlane))));
 
     % Calculating the iterations for each point
     % This decides whether a point is an element of the Mandelbrot set or
     % not
-    % numel returns 1D size of matrix
-    parfor index = 1:numel(complexPlane)
-        iterations(index) = test_bounded(complexPlane(index), maxIterations, maxVal);
-    end
-    %iterations = arrayfun(@(x) test_bounded(x, maxIterations, maxVal), complexPlane);
+    iterations = arrayfun(@(x) test_bounded(x, maxIterations, maxVal), complexPlane);
 
     % Display the image
     imagesc(realRange, imagRange, iterations);
