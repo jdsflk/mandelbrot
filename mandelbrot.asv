@@ -48,11 +48,7 @@ fig.WindowState = 'maximized';
 while isvalid(fig)
     tic;
 
-    % Subtracting the center from initalComplexPlane gives an origin
-    % centered grid
-    % Multiplying with currentZoomFactor does the zoom
-    % Readding center translates the grid to be centered around the given
-    % point
+    % subtract
     complexPlane = center + (initialComplexPlane - center) * currentZoomFactor;
 
     % Preallocating the matrix for better efficiency
@@ -79,7 +75,6 @@ while isvalid(fig)
     % Update the figure
     drawnow limitrate;
 
-    % Dynamically updating the zoom factor
     currentZoomFactor = currentZoomFactor * zoomFactor;
 
     % Zoom speed 60fps -> 0.016
