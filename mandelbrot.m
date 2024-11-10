@@ -68,7 +68,7 @@ for curFrame = 1:1:numberOfFrames
     % Calculating the iterations for each point
     % This decides whether a point is an element of the Mandelbrot set or
     % not
-    currentVal = gpuArray.zeros(size(complexPlane), 'single');
+    currentVal = complexPlane;
     for i = 0:1:maxIterations
         currentVal = currentVal.^2 + complexPlane;
         % Calculating the square of the absolute value is faster than abs()
