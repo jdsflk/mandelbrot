@@ -16,7 +16,7 @@ maxIterations = 500;
 
 % We consider the sequence to be bounded if it's elements are less then
 % this value
-maxVal = 2;
+maxValSquared = 4;
 
 % Factor by which we reduce the range of data on each frame
 % Basically the speed of the zoom effect
@@ -72,7 +72,7 @@ for curFrame = 1:1:numberOfFrames
     for i = 0:1:maxIterations
         currentVal = currentVal.^2 + complexPlane;
         % Calculating the square of the absolute value is faster than abs()
-        stillBounded = real(currentVal).^2 + imag(currentVal).^2 <= maxVal^2;
+        stillBounded = real(currentVal).^2 + imag(currentVal).^2 <= maxValSquared;
         iterations = iterations + stillBounded;
     end
 
