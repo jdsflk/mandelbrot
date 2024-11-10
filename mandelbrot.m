@@ -4,10 +4,10 @@ imagRange = gpuArray([-2 2]);
 
 % The number of calculated points. There's no significant difference
 % between 1000 and 10000;
-resolution = 1000;
+resolution = 500;
 
 % Maximum number of iterations for checking convergence
-maxIterations = 100;
+maxIterations = 500;
 
 % We consider the sequence to be bounded if it's elements are less then
 % this value
