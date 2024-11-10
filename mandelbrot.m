@@ -1,10 +1,15 @@
+% FOR BENCHMARKING
+clear;
+numberOfFrames = 800;
+fps = zeros(numberOfFrames,1);
+
 % Initial range of real and imaginary parts
 realRange = gpuArray([-2 2]);
 imagRange = gpuArray([-2 2]);
 
 % The number of calculated points. There's no significant difference
 % between 1000 and 10000;
-resolution = 500;
+resolution = 800;
 
 % Maximum number of iterations for checking convergence
 maxIterations = 500;
@@ -32,8 +37,8 @@ center = -0.75 + 0.1i;
 
 % Calculate the current grid
 % linspace(from, to, stepsize)
-realVals = gpuArray.linspace(realRange(1), realRange(2), resolution);
-imagVals = gpuArray.linspace(imagRange(1), imagRange(2), resolution);
+realVals = gpuArray.linspace(realRange(1), single(realRange(2)), resolution);
+imagVals = gpuArray.linspace(imagRange(1), single(imagRange(2)), resolution);
 
 % Create the components of the cartesian plane
 [Re, Im] = meshgrid(realVals, imagVals);
@@ -44,8 +49,10 @@ initialComplexPlane = gpuArray(complex(Re, Im));
 % Opens a figure
 fig = figure;
 fig.WindowState = 'maximized';
-
-while isvalid(fig)
+iterations = gpuArray.zeros(size(initialComplexPlane), 'single');
+ h = imagesc(realRange, imagRange, iterations);
+    colormap("turbo");
+for curFrame = 1:1:numberOfFrames
     tic;
 
     % Subtracting the center from initalComplexPlane gives an origin
@@ -56,12 +63,12 @@ while isvalid(fig)
     complexPlane = center + (initialComplexPlane - center) * currentZoomFactor;
 
     % Preallocating the matrix for better efficiency
-    iterations = gpuArray.zeros(size(complexPlane));
+    iterations = gpuArray.zeros(size(complexPlane), 'single');
 
     % Calculating the iterations for each point
     % This decides whether a point is an element of the Mandelbrot set or
     % not
-    currentVal = gpuArray.zeros(size(complexPlane));
+    currentVal = gpuArray.zeros(size(complexPlane), 'single');
     for i = 0:1:maxIterations
         currentVal = currentVal.^2 + complexPlane;
         % Calculating the square of the absolute value is faster than abs()
@@ -70,20 +77,16 @@ while isvalid(fig)
     end
 
     % Display the image
-    cla('reset');
-    imagesc(realRange, imagRange, iterations);
-    xlim(realRange);
-    ylim(imagRange);
-    colormap("turbo");
+   set(h, 'CData', gather(iterations));
 
     % Update the figure
-    drawnow limitrate;
+    drawnow;
 
     % Dynamically updating the zoom factor
     currentZoomFactor = currentZoomFactor * zoomFactor;
 
     % Zoom speed 60fps -> 0.016
     % pause(0.001);
-    t = toc;
-    disp(1/t);
+    fps(curFrame) = 1/toc;
 end
+disp(mean(fps));
