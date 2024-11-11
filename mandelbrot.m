@@ -33,7 +33,9 @@ currentZoomFactor = 1;
 % Elephant valley
 % center = 0.285 + 0.01i;
 % Seahorse valley
-center = -0.75 + 0.1i;
+%center = -0.75 + 0.1i;
+
+center = -0.21503361460851339 + 0.67999116792639069i;
 
 % Calculate the current grid
 % linspace(from, to, stepsize)
@@ -50,9 +52,10 @@ initialComplexPlane = gpuArray(complex(Re, Im));
 fig = figure;
 fig.WindowState = 'maximized';
 iterations = gpuArray.zeros(size(initialComplexPlane), 'single');
- h = imagesc(realRange, imagRange, iterations);
-    colormap("turbo");
-for curFrame = 1:1:numberOfFrames
+h = imagesc(realRange, imagRange, iterations);
+colormap("turbo");
+%while isvalid(fig)
+for curFrame = 1:numberOfFrames
     tic;
 
     % Subtracting the center from initalComplexPlane gives an origin
@@ -77,7 +80,7 @@ for curFrame = 1:1:numberOfFrames
     end
 
     % Display the image
-   set(h, 'CData', gather(iterations));
+    set(h, 'CData', gather(iterations));
 
     % Update the figure
     drawnow;
@@ -86,7 +89,7 @@ for curFrame = 1:1:numberOfFrames
     currentZoomFactor = currentZoomFactor * zoomFactor;
 
     % Zoom speed 60fps -> 0.016
-    % pause(0.001);
+    % pause(0.001); 
     fps(curFrame) = 1/toc;
 end
 disp(mean(fps));
