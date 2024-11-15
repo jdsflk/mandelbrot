@@ -1,16 +1,32 @@
-function mandelbrot(numberOfFrames, resolution, maxIterations)
-    if ~exist('numberOfFrames', 'var')
-        % How many frames do we want to render
-        numberOfFrames = 800;
-    end
-    if ~exist('resolution', 'var')
-        % The number of calculated points. There's no significant difference
-        % between 1000 and 10000;
-        resolution = 800;
-    end
-    if ~exist('maxIterations', 'var')
-        % Maximum number of iterations for checking convergence
-        maxIterations = 500;
+function mandelbrot(varargin)
+    defaultNumberOfFrames = 800;
+    % The number of calculated points. There's no significant difference
+    % between 1000 and 10000;
+    defaultResolution = 800;
+    % Maximum number of iterations for checking convergence
+    defaultMaxIterations = 500;
+    % Live render or create video
+    defaultCreateVideo = true;
+
+    % Input validation
+    % Parser setup
+    p = inputParser;
+    addParameter(p, 'numberOfFrames', defaultNumberOfFrames);
+    addParameter(p, 'resolution', defaultResolution);
+    addParameter(p, 'maxIterations', defaultMaxIterations);
+    addParameter(p, 'createVideo', defaultCreateVideo);
+    % Parse input
+    parse(p, varargin{:});
+
+    % Parameters
+    numberOfFrames = p.Results.numberOfFrames;
+    resolution = p.Results.resolution;
+    maxIterations = p.Results.maxIterations;
+    createVideo = p.Results.createVideo;
+
+    if(createVideo)
+        v = VideoWriter("mandelbrot.avi", "Uncompressed AVI");
+        open(v);
     end
     % FOR BENCHMARKING
 
@@ -54,13 +70,14 @@ function mandelbrot(numberOfFrames, resolution, maxIterations)
     % Combine the two components to form the cartesian plane
     initialComplexPlane = gpuArray(complex(Re, Im));
     
-    % Opens a figure
-    fig = figure;
-    fig.WindowState = 'maximized';
     % iterations(800,800) = gpuArray(single(eps*1i));
     %iterations = gpuArray.zeros([800,800], 'single');
     iterations = gpuArray.zeros(size(initialComplexPlane), 'single');
-    h = imagesc(realRange, imagRange, iterations);
+    if (~createVideo)
+        fig = figure;
+        fig.WindowState = 'maximized';
+        h = imagesc(realRange, imagRange, iterations);
+    end
     colormap("turbo");
     %while isvalid(fig)
     for curFrame = 1:numberOfFrames
@@ -87,11 +104,25 @@ function mandelbrot(numberOfFrames, resolution, maxIterations)
             iterations = iterations + stillBounded;
         end
     
-        % Display the image
-        set(h, 'CData', gather(iterations));
-    
-        % Update the figure
-        drawnow;
+        if(createVideo)
+            % Normalize iterations to a scale of 0-1
+            iterations = iterations / maxIterations;
+            % Convert to rgb
+            rgbFrame = ind2rgb(uint8(iterations * 255), turbo(256));
+            % Write frame to video
+            writeVideo(v, gather(rgbFrame));
+
+            % Display progress bar
+            progressBar(1) = '[';
+            progressBar(11) = ']';
+            progressBar(2:floor(curFrame/numberOfFrames*10)) = "=";
+            progressBar(ceil(curFrame/numberOfFrames*10)+1:10) = ".";
+            disp(progressBar);
+        else
+            % Display the image
+            set(h, 'CData', gather(iterations));
+            drawnow;
+        end
     
         % Dynamically updating the zoom factor
         currentZoomFactor = currentZoomFactor * zoomFactor;
