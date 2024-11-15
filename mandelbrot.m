@@ -1,4 +1,5 @@
 function mandelbrot(varargin)
+    programTimer = tic;
     defaultNumberOfFrames = 800;
     % The number of calculated points. There's no significant difference
     % between 1000 and 10000;
@@ -81,7 +82,7 @@ function mandelbrot(varargin)
     colormap("turbo");
     %while isvalid(fig)
     for curFrame = 1:numberOfFrames
-        tic;
+        fpsTimer = tic;
     
         % Subtracting the center from initalComplexPlane gives an origin
         % centered grid
@@ -112,12 +113,13 @@ function mandelbrot(varargin)
             % Write frame to video
             writeVideo(v, gather(rgbFrame));
 
-            % Display progress bar
+            % Display progress bar and timer
             progressBar(1) = '[';
             progressBar(11) = ']';
             progressBar(2:floor(curFrame/numberOfFrames*10)) = "=";
             progressBar(ceil(curFrame/numberOfFrames*10)+1:10) = ".";
             disp(progressBar);
+            disp([num2str(toc(programTimer)) 's elapsed']);
         else
             % Display the image
             set(h, 'CData', gather(iterations));
@@ -129,7 +131,7 @@ function mandelbrot(varargin)
     
         % Zoom speed 60fps -> 0.016
         % pause(0.001); 
-        fps(curFrame) = 1/toc;
+        fps(curFrame) = 1/toc(fpsTimer);
     end
     disp(mean(fps));
 end
