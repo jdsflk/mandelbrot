@@ -2,9 +2,8 @@ function mandelbrot(varargin)
     programTimer = tic;
     %% Default parameters & input parsing
     defaultNumberOfFrames = 800;
-    % The number of calculated points. There's no significant difference
-    % between 1000 and 10000;
-    defaultResolution = 800;
+    defaultWidth = 800;
+    defaultHeight = defaultWidth;
     % Maximum number of iterations for checking convergence
     defaultMaxIterations = 500;
     % Live render or create video
@@ -14,17 +13,19 @@ function mandelbrot(varargin)
     % Parser setup
     p = inputParser;
     addParameter(p, 'numberOfFrames', defaultNumberOfFrames);
-    addParameter(p, 'resolution', defaultResolution);
     addParameter(p, 'maxIterations', defaultMaxIterations);
     addParameter(p, 'createVideo', defaultCreateVideo);
+    addParameter(p, 'width', defaultWidth);
+    addParameter(p, 'height', defaultHeight);
     % Parse input
     parse(p, varargin{:});
 
     % Parameters
     numberOfFrames = p.Results.numberOfFrames;
-    resolution = p.Results.resolution;
     maxIterations = p.Results.maxIterations;
     createVideo = p.Results.createVideo;
+    width = p.Results.width;
+    height = p.Results.height;
 
     %% Initializing
 
@@ -42,8 +43,8 @@ function mandelbrot(varargin)
 
     % Calculate the current grid
     % linspace(from, to, stepsize)
-    realVals = gpuArray.linspace(realRange(1), single(realRange(2)), resolution);
-    imagVals = gpuArray.linspace(imagRange(1), single(imagRange(2)), resolution);
+    realVals = gpuArray.linspace(realRange(1), single(realRange(2)), width);
+    imagVals = gpuArray.linspace(imagRange(1), single(imagRange(2)), height);
     
     % Create the components of the cartesian plane
     [Re, Im] = meshgrid(realVals, imagVals);
@@ -102,7 +103,7 @@ function mandelbrot(varargin)
             % Normalize iterations to a scale of 0-1
             iterations = iterations / maxIterations;
             % Convert to rgb
-            rgbFrame = ind2rgb(uint8(iterations * 255), turbo(500));
+            rgbFrame = ind2rgb(uint8(iterations * 255), turbo(256));
             % Write frame to video
             writeVideo(v, gather(rgbFrame));
 
