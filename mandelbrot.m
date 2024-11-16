@@ -78,9 +78,8 @@ function mandelbrot(varargin)
         fig = figure;
         fig.WindowState = 'maximized';
         h = imagesc(realRange, imagRange, iterations);
+        colormap("turbo");
     end
-    colormap("turbo");
-    %while isvalid(fig)
     for curFrame = 1:numberOfFrames
         fpsTimer = tic;
     
@@ -91,19 +90,11 @@ function mandelbrot(varargin)
         % point
         complexPlane = center + (initialComplexPlane - center) * currentZoomFactor;
     
-        % Preallocating the matrix for better efficiency
-        iterations = gpuArray.zeros(size(complexPlane), 'single');
-    
         % Calculating the iterations for each point
         % This decides whether a point is an element of the Mandelbrot set or
         % not
-        currentVal = complexPlane;
-        for i = 0:1:maxIterations
-            currentVal = currentVal.^2 + complexPlane;
-            % Calculating the square of the absolute value is faster than abs()
-            stillBounded = real(currentVal).^2 + imag(currentVal).^2 <= maxValSquared;
-            iterations = iterations + stillBounded;
-        end
+        iterations = arrayfun(@calculateIters, complexPlane, maxIterations, ...
+            maxValSquared);
     
         if(createVideo)
             % Normalize iterations to a scale of 0-1
@@ -134,4 +125,14 @@ function mandelbrot(varargin)
         fps(curFrame) = 1/toc(fpsTimer);
     end
     disp(mean(fps));
+end
+
+function iterations = calculateIters(c, maxIterations, maxValSquared)
+    z = c;
+    iterations = 0;
+    for i = 1:1:maxIterations
+        z = z^2 + c;
+        stillBounded = real(z)^2 + imag(z)^2 <= maxValSquared;
+        iterations = iterations + stillBounded;
+    end
 end
