@@ -59,16 +59,12 @@ function mandelbrot(varargin)
      
     %% Choosing zoom Center point
     % The point on which we zoom in.
-    % Point near origin
-    % center = -0.75 + 0i;
-    % Spiral region
-    % center = -0.01015 + 0.633i;
     % Feigenbaum Point
-    % center = -1.40115 + 0i;
+    center = -1.40115 + 0i;
     % Elephant valley
     % center = 0.285 + 0.01i;
     % Seahorse valley
-    center = -0.75 + 0.1i;
+    % center = -0.75 + 0.1i;
     
     %center = -0.21503361460851339 + 0.67999116792639069i;
     
@@ -134,9 +130,8 @@ end
 function iterations = calculateIters(c, maxIterations)
     z = c;
     iterations = 0;
-    for i = 1:1:maxIterations
+    while real(z)^2 + imag(z)^2 <= 4 && iterations < maxIterations
         z = z^2 + c;
-        stillBounded = real(z)^2 + imag(z)^2 <= 4;
-        iterations = iterations + stillBounded;
+        iterations = iterations + 1;
     end
 end
