@@ -43,8 +43,8 @@ function mandelbrot(varargin)
 
     % Calculate the current grid
     % linspace(from, to, stepsize)
-    realVals = gpuArray.linspace(realRange(1), single(realRange(2)), width);
-    imagVals = gpuArray.linspace(imagRange(1), single(imagRange(2)), height);
+    realVals = gpuArray.linspace(single(realRange(1)), single(realRange(2)), width);
+    imagVals = gpuArray.linspace(single(imagRange(1)), single(imagRange(2)), height);
     
     % Create the components of the cartesian plane
     [Re, Im] = meshgrid(realVals, imagVals);
