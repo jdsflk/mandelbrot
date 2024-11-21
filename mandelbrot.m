@@ -60,13 +60,13 @@ function mandelbrot(varargin)
     %% Choosing zoom Center point
     % The point on which we zoom in.
     % Feigenbaum Point
-    center = -1.40115 + 0i;
+    % center = -1.40115 + 0i;
     % Elephant valley
     % center = 0.285 + 0.01i;
     % Seahorse valley
     % center = -0.75 + 0.1i;
     
-    %center = -0.21503361460851339 + 0.67999116792639069i;
+    center = -0.21503361460851339 + 0.67999116792639069i;
     
     % iterations(800,800) = gpuArray(single(eps*1i));
     %iterations = gpuArray.zeros([800,800], 'single');
