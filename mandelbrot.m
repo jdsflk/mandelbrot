@@ -99,13 +99,16 @@ function mandelbrot(varargin)
         if(createVideo)
             % Normalize iterations to a scale of 0-1
             iterations = iterations / maxIterations;
-            %iterations = imfilter(iterations, filter);
+            
+            sigma = 0.2;
+            alpha = 6;
+            beta = 0.7;
             iterations = gather(iterations);
             iterations = single(iterations);
-            iterations = locallapfilt(iterations, 0.1, 4);
+            iterations = locallapfilt(iterations, sigma, alpha, beta, NumIntensityLevels=12);
             iterations = gpuArray(iterations);
             % Convert to rg
-            rgbFrame = ind2rgb(uint8(iterations * 255), hsv(256));
+            rgbFrame = ind2rgb(uint8(iterations * 255), sky(256));
             % Write frame to video
             writeVideo(v, gather(rgbFrame));
 
