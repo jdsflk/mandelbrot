@@ -41,10 +41,14 @@ function mandelbrot(varargin)
     realRange = gpuArray([-2 2]);
     imagRange = gpuArray([-2 2]);
 
+    oversamplingFactor = 2;
+    oversamplingWidth = oversamplingFactor * width;
+    oversamplingHeight = oversamplingFactor * height;
+
     % Calculate the current grid
     % linspace(from, to, stepsize)
-    realVals = gpuArray.linspace(single(realRange(1)), single(realRange(2)), width);
-    imagVals = gpuArray.linspace(single(imagRange(1)), single(imagRange(2)), height);
+    realVals = gpuArray.linspace(single(realRange(1)), single(realRange(2)), oversamplingWidth);
+    imagVals = gpuArray.linspace(single(imagRange(1)), single(imagRange(2)), oversamplingHeight);
     
     % Create the components of the cartesian plane
     [Re, Im] = meshgrid(realVals, imagVals);
@@ -97,18 +101,14 @@ function mandelbrot(varargin)
         iterations = arrayfun(@calculateIters, complexPlane, maxIterations);
     
         if(createVideo)
+            iterations = imresize(iterations, [height width], 'bilinear');
             % Normalize iterations to a scale of 0-1
             iterations = iterations / maxIterations;
             
-            sigma = 0.2;
-            alpha = 6;
-            beta = 0.7;
-            iterations = gather(iterations);
-            iterations = single(iterations);
-            iterations = locallapfilt(iterations, sigma, alpha, beta, NumIntensityLevels=12);
-            iterations = gpuArray(iterations);
             % Convert to rg
-            rgbFrame = ind2rgb(uint8(iterations * 255), sky(256));
+            rgbFrame = ind2rgb(uint8(iterations * 255), hsv(256));
+            sigma = 0.5;
+            rgbFrame = imgaussfilt(rgbFrame, sigma);
             % Write frame to video
             writeVideo(v, gather(rgbFrame));
 
