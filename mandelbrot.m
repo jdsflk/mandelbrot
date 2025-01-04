@@ -30,7 +30,7 @@ function mandelbrot(varargin)
     %% Initializing
 
     if(createVideo)
-        v = VideoWriter("mandelbrot.avi", "Uncompressed AVI");
+        v = VideoWriter("mandelbrot.avi", "MPEG-4");
         open(v);
     end
     % FOR BENCHMARKING
@@ -54,8 +54,8 @@ function mandelbrot(varargin)
     
     % Factor by which we reduce the range of data on each frame
     % Basically the speed of the zoom effect
-    zoomFactor = 0.99;
-    currentZoomFactor = 1;
+    zoomFactor = 0.995;
+    currentZoomLevel = 1;
      
     %% Choosing zoom Center point
     % The point on which we zoom in.
@@ -64,9 +64,9 @@ function mandelbrot(varargin)
     % Elephant valley
     % center = 0.285 + 0.01i;
     % Seahorse valley
-    % center = -0.75 + 0.1i;
+    center = -0.75 + 0.1i;
     
-    center = -0.21503361460851339 + 0.67999116792639069i;
+    % center = -0.21503361460851339 + 0.67999116792639069i;
     
     % iterations(800,800) = gpuArray(single(eps*1i));
     %iterations = gpuArray.zeros([800,800], 'single');
@@ -78,7 +78,8 @@ function mandelbrot(varargin)
         fig = figure;
         fig.WindowState = 'maximized';
         h = imagesc(realRange, imagRange, iterations);
-        colormap("turbo");
+        % sky, hsv, turbo look pretty
+        colormap("turbo")
     end
     for curFrame = 1:numberOfFrames
         fpsTimer = tic;
@@ -88,7 +89,7 @@ function mandelbrot(varargin)
         % Multiplying with currentZoomFactor does the zoom
         % Readding center translates the grid to be centered around the given
         % point
-        complexPlane = center + (initialComplexPlane - center) * currentZoomFactor;
+        complexPlane = center + (initialComplexPlane - center) * currentZoomLevel;
     
         % Calculating the iterations for each point
         % This decides whether a point is an element of the Mandelbrot set or
@@ -98,8 +99,13 @@ function mandelbrot(varargin)
         if(createVideo)
             % Normalize iterations to a scale of 0-1
             iterations = iterations / maxIterations;
-            % Convert to rgb
-            rgbFrame = ind2rgb(uint8(iterations * 255), turbo(256));
+            %iterations = imfilter(iterations, filter);
+            iterations = gather(iterations);
+            iterations = single(iterations);
+            iterations = locallapfilt(iterations, 0.1, 4);
+            iterations = gpuArray(iterations);
+            % Convert to rg
+            rgbFrame = ind2rgb(uint8(iterations * 255), hsv(256));
             % Write frame to video
             writeVideo(v, gather(rgbFrame));
 
@@ -117,10 +123,8 @@ function mandelbrot(varargin)
         end
     
         % Dynamically updating the zoom factor
-        currentZoomFactor = currentZoomFactor * zoomFactor;
-    
-        % Zoom speed 60fps -> 0.016
-        % pause(0.001); 
+        currentZoomLevel = currentZoomLevel * zoomFactor;
+
         fps(curFrame) = 1/toc(fpsTimer);
     end
     disp(mean(fps));
