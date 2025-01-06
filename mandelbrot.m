@@ -30,17 +30,18 @@ function mandelbrot(varargin)
     %% Initializing
 
     if(createVideo)
-        v = VideoWriter("mandelbrot.avi", "MPEG-4");
+        v = VideoWriter("mandelbrot", "MPEG-4");
         open(v);
     end
-    % FOR BENCHMARKING
 
+    % FOR BENCHMARKING
     fps = zeros(numberOfFrames,1);
     
     % Initial range of real and imaginary parts
     realRange = gpuArray([-2 2]);
     imagRange = gpuArray([-2 2]);
 
+    % SSAA parameters
     oversamplingFactor = 2;
     oversamplingWidth = oversamplingFactor * width;
     oversamplingHeight = oversamplingFactor * height;
@@ -69,12 +70,9 @@ function mandelbrot(varargin)
     % center = 0.285 + 0.01i;
     % Seahorse valley
     center = -0.75 + 0.1i;
-    
+    % Nautilus
     % center = -0.21503361460851339 + 0.67999116792639069i;
     
-    % iterations(800,800) = gpuArray(single(eps*1i));
-    %iterations = gpuArray.zeros([800,800], 'single');
-
     %% Main loop
 
     iterations = gpuArray.zeros(size(initialComplexPlane), 'single');
@@ -105,11 +103,21 @@ function mandelbrot(varargin)
             % Normalize iterations to a scale of 0-1
             iterations = iterations / maxIterations;
             
-            % Convert to rg
-            rgbFrame = ind2rgb(uint8(iterations * 255), hsv(256));
+            % LAPLACE FILTER - REMOVES CHAOTIC DETAILS
+            % iterations = gather(iterations);
+            % iterations = single(iterations);
+            % sigma = 0.1;
+            % alpha = 4;
+            % iterations = locallapfilt(iterations, sigma, alpha);
+            % iterations = gpuArray(iterations);
+            
+            % Convert to rgb
+            rgbFrame = ind2rgb(uint8(iterations * 255), turbo(256));
+            
             sigma = 0.5;
             rgbFrame = imgaussfilt(rgbFrame, sigma);
             % Write frame to video
+            % Note: when using 'Archival' or 'Motion JPEG 2000' video profile convert to uint8
             writeVideo(v, gather(rgbFrame));
 
             % Display progress bar and timer
@@ -131,6 +139,10 @@ function mandelbrot(varargin)
         fps(curFrame) = 1/toc(fpsTimer);
     end
     disp(mean(fps));
+    % Notification
+    if(createVideo)
+        beep;
+    end
 end
 
 %% Iteration function
