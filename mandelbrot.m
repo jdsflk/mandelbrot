@@ -1,4 +1,4 @@
-function mandelbrot(varargin)
+function mandelbrot()
     programTimer = tic;
     %% Parameters
     numberOfFrames = 1400;
