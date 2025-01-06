@@ -1,31 +1,25 @@
 function mandelbrot(varargin)
     programTimer = tic;
-    %% Default parameters & input parsing
-    defaultNumberOfFrames = 800;
-    defaultWidth = 800;
-    defaultHeight = defaultWidth;
-    % Maximum number of iterations for checking convergence
-    defaultMaxIterations = 500;
-    % Live render or create video
-    defaultCreateVideo = true;
+    %% Parameters
+    numberOfFrames = 1400;
+    maxIterations = 1000;
+    createVideo = false;
+    width = 1366;
+    height = 768;
+    % SSAA parameters
+    oversamplingFactor = 1;
+    oversamplingWidth = oversamplingFactor * width;
+    oversamplingHeight = oversamplingFactor * height;
 
-    % Input validation
-    % Parser setup
-    p = inputParser;
-    addParameter(p, 'numberOfFrames', defaultNumberOfFrames);
-    addParameter(p, 'maxIterations', defaultMaxIterations);
-    addParameter(p, 'createVideo', defaultCreateVideo);
-    addParameter(p, 'width', defaultWidth);
-    addParameter(p, 'height', defaultHeight);
-    % Parse input
-    parse(p, varargin{:});
-
-    % Parameters
-    numberOfFrames = p.Results.numberOfFrames;
-    maxIterations = p.Results.maxIterations;
-    createVideo = p.Results.createVideo;
-    width = p.Results.width;
-    height = p.Results.height;
+    % Center point
+    % Feigenbaum Point
+    % center = -1.40115 + 0i;
+    % Elephant valley
+    % center = 0.285 + 0.01i;
+    % Seahorse valley
+    center = -0.75 + 0.1i;
+    % Nautilus
+    % center = -0.21503361460851339 + 0.67999116792639069i;
 
     %% Initializing
 
@@ -41,11 +35,6 @@ function mandelbrot(varargin)
     realRange = gpuArray([-2 2]);
     imagRange = gpuArray([-2 2]);
 
-    % SSAA parameters
-    oversamplingFactor = 2;
-    oversamplingWidth = oversamplingFactor * width;
-    oversamplingHeight = oversamplingFactor * height;
-
     % Calculate the current grid
     % linspace(from, to, stepsize)
     realVals = gpuArray.linspace(single(realRange(1)), single(realRange(2)), oversamplingWidth);
@@ -58,23 +47,11 @@ function mandelbrot(varargin)
     initialComplexPlane = gpuArray(complex(Re, Im));
     
     % Factor by which we reduce the range of data on each frame
-    % Basically the speed of the zoom effect
+    % Controls the speed of the zoom
     zoomFactor = 0.995;
     currentZoomLevel = 1;
-     
-    %% Choosing zoom Center point
-    % The point on which we zoom in.
-    % Feigenbaum Point
-    % center = -1.40115 + 0i;
-    % Elephant valley
-    % center = 0.285 + 0.01i;
-    % Seahorse valley
-    center = -0.75 + 0.1i;
-    % Nautilus
-    % center = -0.21503361460851339 + 0.67999116792639069i;
     
     %% Main loop
-
     iterations = gpuArray.zeros(size(initialComplexPlane), 'single');
     if (~createVideo)
         fig = figure;
@@ -133,7 +110,7 @@ function mandelbrot(varargin)
             drawnow;
         end
     
-        % Dynamically updating the zoom factor
+        % Zooming in
         currentZoomLevel = currentZoomLevel * zoomFactor;
 
         fps(curFrame) = 1/toc(fpsTimer);
@@ -141,7 +118,7 @@ function mandelbrot(varargin)
     disp(mean(fps));
     % Notification
     if(createVideo)
-        beep;
+       beep;
     end
 end
 
