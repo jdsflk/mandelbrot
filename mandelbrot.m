@@ -56,9 +56,10 @@ function mandelbrot()
     if (~createVideo)
         fig = figure;
         fig.WindowState = 'maximized';
-        h = imagesc(realRange, imagRange, iterations);
+        h = imagesc(iterations);
         % sky, hsv, turbo look pretty
-        colormap("turbo")
+        colormap("turbo");
+        axis off;
     end
     for curFrame = 1:numberOfFrames
         fpsTimer = tic;
